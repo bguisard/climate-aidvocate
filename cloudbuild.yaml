@@ -1,0 +1,9 @@
+steps:
+# The code
+- name: gcr.io/cloud-builders/git
+  args: ['clone', 'https://github.com/bguisard/climate-aidvocate.git']
+
+# App Engine ('beta' for live debugging)
+- name: gcr.io/cloud-builders/gcloud
+  args: ['beta', 'app', 'deploy', '--version=tweets']
+  dir: 'twitter_to_pubsub'

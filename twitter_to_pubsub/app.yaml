@@ -1,0 +1,6 @@
+runtime: custom
+api_version: '1.0'
+env: flexible
+threadsafe: true
+automatic_scaling:
+  min_num_instances: 1
