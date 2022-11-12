@@ -21,7 +21,7 @@ import datetime
 import os
 from concurrent import futures
 
-from google.cloud import pubsub_v1
+from google.cloud import pubsub_v1, secretmanager
 from tweepy import StreamingClient, StreamRule
 
 
@@ -73,7 +73,12 @@ class PubSubStreamer(StreamingClient):
 
 if __name__ == "__main__":
     print("Initializing Twitter Stream")
-    bearer_token = os.environ["TWITTER_BEARER_TOKEN"]
+
+    secret_client = secretmanager.SecretManagerServiceClient()
+    project = f"projects/{os.environ['PROJECT_ID']}"
+    secret_name = f"{project}/secrets/TWITTER_BEARER_TOKEN/versions/latest"
+    response = secret_client.access_secret_version(request={"name": secret_name})
+    bearer_token = response.payload.data.decode("UTF-8")
 
     stream = PubSubStreamer(bearer_token)
 
