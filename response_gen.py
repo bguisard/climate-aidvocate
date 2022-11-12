@@ -17,13 +17,13 @@ NEXUS_EMBEDDINGS = pd.read_csv('data/nexus_embeddings_chunked.csv')
 
 
 def respond(text: str) -> str:
-    response = None
+
     stance = classify_text(str)
-    if stance == "denier":
-        pass
-    elif stance == "believer":
+    if stance == "believer":
         res = search_material(topic=NEXUS_EMBEDDINGS, query=text)
         response = respond_using_topic(text=text, topic=res.text[0])
+    else:
+        response = respond_generic(text)
 
     return response
 
@@ -89,12 +89,12 @@ def completion_with_backoff(**kwargs):
     return openai.Completion.create(**kwargs)
 
 
-def respond_using_topic(text: str, topic: str, max_tokens: int = 512, temperature: int = 0) -> str:
+def respond_using_topic(text: str, topic: str, max_tokens: int = 280, temperature: int = 0) -> str:
     response = completion_with_backoff(
         model="text-davinci-002",
         prompt=f"You are a climate change educator. Using only the information and facts provided in the excerpt below, "
-        "respond to this message in less than 280 characters. Provide action items and show hope:"
-        f"\n###\nMessage:{text}"
+        "respond to this tweet. Provide action items and show hope:"
+        f"\n###\nTweet:{text}"
         f"\n###\nExcerpt:{topic}\n###\n\nResponse:",
         temperature=temperature,
         max_tokens=max_tokens,
@@ -102,5 +102,20 @@ def respond_using_topic(text: str, topic: str, max_tokens: int = 512, temperatur
         frequency_penalty=0,
         presence_penalty=0,
     )
+    return response['choices'][0]['text'].strip()
 
+
+def respond_generic(text: str, max_tokens: int = 280, temperature: int = 0) -> str:
+    response = completion_with_backoff(
+        model="text-davinci-002",
+        prompt=f"You are a climate change educator. "
+        "Respond to this tweet empathetically and with factual information."
+        f"\n###\nTweet:{text}"
+        f"Response:",
+        temperature=temperature,
+        max_tokens=max_tokens,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0,
+    )
     return response['choices'][0]['text'].strip()
