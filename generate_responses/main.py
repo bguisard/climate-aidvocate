@@ -130,9 +130,8 @@ def generate_responses(request):
 
         safe = False
         stance = classify_text(reply)
-        # Skip twitting for now, pending QA.
-        # if stance in (" believer", " neutral"):
-        #     safe = True
+        if stance in (" believer", " neutral"):
+            safe = True
 
         reply = split_responses(reply)
         if reply is not None:
@@ -150,7 +149,7 @@ def generate_responses(request):
                     "text": part,
                     "in_reply_to_tweet_id": row.id,
                     "reply_stance": stance.strip(),
-                    # "safe": safe,
+                    "safe": safe,
                     "submitted": True if reply_id is not None else False,
                 }
                 responses.append(response)
