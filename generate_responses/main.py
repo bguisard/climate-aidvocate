@@ -138,10 +138,13 @@ def generate_responses(request):
             for part in reply:
                 reply_id = None
                 if safe:
-                    response = client.create_tweet(
-                        text=row.text, in_reply_to_tweet_id=row.id
-                    )
-                    reply_id = response.data["id"]
+                    try:
+                        response = client.create_tweet(
+                            text=row.text, in_reply_to_tweet_id=row.id
+                        )
+                        reply_id = response.data["id"]
+                    except tweepy.TweepError as e:
+                        print(f"Failed to reply to tweet {row.id}: {e}")
 
                 response = {
                     "created_at": datetime.now(),
