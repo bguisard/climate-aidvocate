@@ -92,6 +92,7 @@ if __name__ == "__main__":
         "#climeatechangeisfalse",
         "#globalwarminghoax",
         "#climatechangenotreal",
+        "@ClimateAIdvocat",
     ]
     stream.add_rules([StreamRule(rule) for rule in rules])
     stream.filter()
