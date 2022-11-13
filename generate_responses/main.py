@@ -23,38 +23,6 @@ def authenticate_openai():
     response = secret_client.access_secret_version(request={"name": secret_name})
     openai.api_key = response.payload.data.decode("UTF-8")
 
-<<<<<<< HEAD:response_generation/main.py
-    inputs = query_bq(os.environ["dataset"], os.environ["table"])
-    client = get_client()
-
-    responses = []
-    for row in inputs:
-        reply = complete_response(row.text)
-
-        if reply is not None:
-            response = client.create_tweet(text=row.text, in_reply_to_tweet_id=row.id)
-
-        if response and response.data["id"] is not None:
-            responses.append(response.data["id"])
-
-    return (responses, 204)
-
-
-def query_bq(dataset, table, n=10):
-    client = bigquery.Client()
-    dataset_ref = client.dataset(dataset)
-    table_ref = dataset_ref.table(table)
-    query_job = client.query(
-        f"""
-        SELECT id, text
-        FROM {table_ref}
-        ORDER BY created_at DESC
-        LIMIT {n}"""
-    )
-    results = query_job.result() 
-    return results
-=======
->>>>>>> 7a391f1 (Update generate responses code):generate_responses/main.py
 
 def new_tweepy_client() -> tweepy.Client:
     secret_client = secretmanager.SecretManagerServiceClient()
