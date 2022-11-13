@@ -1,23 +1,89 @@
+import os
 from typing import T
 
 import numpy as np
 import openai
 import pandas as pd
+import tweepy
+from google.cloud import bigquery, secretmanager
+from tenacity import retry, stop_after_attempt, wait_random_exponential
 
-from tenacity import (
-    retry,
-    stop_after_attempt,
-    wait_random_exponential,
-)
 
-FINETUNED_MODEL = 'ada:ft-oai-hackathon-2022-team-13-2022-11-12-20-55-09'
+FINETUNED_MODEL = 'babbage:ft-oai-hackathon-2022-team-13-2022-11-13-01-30-02'
 
 NEXUS_EMBEDDINGS = pd.read_csv('data/nexus_embeddings_chunked.csv')
 
 
+def generate_response(request):
+    # Only run this function half of the time.
+    if np.random.random() < 0.5:
+        return ("", 204)
 
-def respond(text: str) -> str:
+    secret_client = secretmanager.SecretManagerServiceClient()
+    project = f"projects/{os.environ['PROJECT_ID']}"
+    secret_name = f"{project}/secrets/OPENAI_API_KEY/versions/latest"
+    response = secret_client.access_secret_version(request={"name": secret_name})
+    openai.api_key = response.payload.data.decode("UTF-8")
 
+    inputs = query_bq(os.environ["dataset"], os.environ["table"])
+    client = get_client()
+
+    responses = []
+    for row in inputs:
+        reply = complete_response(row.text)
+
+        if reply is not None:
+            response = client.create_tweet(text=row.text, in_reply_to_tweet_id=row.id)
+
+        if response and response.data["id"] is not None:
+            responses.append(response.data["id"])
+
+    return (responses, 204)
+
+
+def query_bq(dataset, table, n=10):
+    client = bigquery.Client()
+    dataset_ref = client.dataset(dataset)
+    table_ref = dataset_ref.table(table)
+    table = client.get_table(table_ref)
+    query_job = client.query(
+        f"""
+        SELECT id, text
+        FROM `bigquery-public-data.stackoverflow.posts_questions`
+        ORDER BY created_at DESC
+        LIMIT {n}"""
+    )
+    results = query_job.result() 
+    return results
+
+
+def get_client() -> tweepy.Client:
+    secret_client = secretmanager.SecretManagerServiceClient()
+    secret_placeholder = "projects/%s/secrets/%s/versions/latest"
+    secret_names = [
+        "TWITTER_CONSUMER_KEY",
+        "TWITTER_CONSUMER_SECRET",
+        "TWITTER_ACCESS_TOKEN",
+        "TWITTER_ACCESS_TOKEN_SECRET",
+    ]
+    secrets = {
+        secret_name: secret_client.access_secret_version(
+            request={
+                "name": secret_placeholder % (os.environ["PROJECT_ID"], secret_name)
+            }
+        ).payload.data.decode("UTF-8")
+        for secret_name in secret_names
+    }
+    client = tweepy.Client(
+        consumer_key=secrets["TWITTER_CONSUMER_KEY"],
+        consumer_secret=secrets["TWITTER_CONSUMER_SECRET"],
+        access_token=secrets["TWITTER_ACCESS_TOKEN"],
+        access_token_secret=secrets["TWITTER_ACCESS_TOKEN_SECRET"],
+    )
+    return client
+
+
+def complete_response(text: str) -> str:
     stance = classify_text(str)
     if stance == "believer":
         res = search_material(topic=NEXUS_EMBEDDINGS, query=text)
@@ -109,7 +175,7 @@ def respond_generic(text: str, max_tokens: int = 280, temperature: int = 0) -> s
     response = completion_with_backoff(
         model="text-davinci-002",
         prompt=f"You are a climate change educator. "
-        "Respond to this tweet empathetically and with factual information."
+        "Respond to this tweet empathetically and specifically address any false points with factual information and citations."
         f"\n###\nTweet:{text}"
         f"Response:",
         temperature=temperature,
