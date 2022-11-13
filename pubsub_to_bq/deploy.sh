@@ -8,4 +8,4 @@ gcloud functions deploy pubsub-to-bq \
   --trigger-event=google.pubsub.topic.publish \
   --trigger-resource=raw-tweets \
   --entry-point=consume_tweet \
-  --set-env-vars=dataset=climate_tweets,table=tweets
+  --set-env-vars dataset=climate_tweets,table=tweets
