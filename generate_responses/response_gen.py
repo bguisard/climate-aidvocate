@@ -174,5 +174,5 @@ def split_responses(text: str) -> List[str]:
         
     if responses[-1][-2:] == ". ":
         responses[-1] += f"({num + 1})"
-        
-    return responses
+
+    return [r.replace("..", ".") for r in responses]
