@@ -142,37 +142,37 @@ def split_responses(text: str) -> List[str]:
         return [text]
 
     num = 0
-    responses = ['']
-    for sentence in text.split('. '):
-        if sentence == '':
+    responses = [""]
+    for sentence in text.split(". "):
+        if sentence == "":
             continue
         if len(sentence) > TWITTER_TOKEN_LIMIT - 5:
             words = sentence.split()
             k = int(len(words)/2)
-            phrase1 = ' '.join(words[:k]) + f' ({num + 1})'
-            phrase2 = ' '.join(words[k:]) + '.'
-            responses[num] += phrase1.lstrip(' ')
-            responses.append('')
+            phrase1 = " ".join(words[:k]) + f" ({num + 1})"
+            phrase2 = " ".join(words[k:]) + ". "
+            responses[num] += phrase1
+            responses.append("")
             num += 1
-            responses[num] += phrase2.lstrip(' ')
+            responses[num] += phrase2
 
         elif len(sentence) + len(responses[num]) <= TWITTER_TOKEN_LIMIT - 5:
             responses[num] += sentence
-            responses[num] += '.'
+            responses[num] += ". "
         else:
-            if responses[num][-1] == '.':
-                responses[num] += f' ({num + 1})'
+            if responses[num][-2:] == ". ":
+                responses[num] += f"({num + 1})"
             else:
-                responses[num] += f'. ({num + 1})'
-            responses.append('')
+                responses[num] += f". ({num + 1})"
+            responses.append("")
             num += 1
             responses[num] += sentence
-            responses[num] += '.'
+            responses[num] += ". "
 
     if responses[-1] == "" or responses[-1] == "\n":
         responses = responses[:-1]
         
-    if responses[-1][-1] == ".":
-        responses[-1] += f' ({num + 1})'
+    if responses[-1][-2:] == ". ":
+        responses[-1] += f"({num + 1})"
         
     return responses
