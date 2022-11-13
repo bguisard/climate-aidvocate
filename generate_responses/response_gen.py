@@ -166,5 +166,7 @@ def split_responses(text: str) -> List[str]:
                 responses[num] += f'. ({num + 1})'
             responses.append('')
             num += 1
+            responses[num] += sentence
+            responses[num] += '.'
 
     return responses[:-1]
