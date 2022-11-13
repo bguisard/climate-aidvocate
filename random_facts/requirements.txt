@@ -1,0 +1,4 @@
+openai==0.25.0
+tenacity==8.1.0
+tweepy==4.12.1
+google-cloud-secret-manager==2.12.6
