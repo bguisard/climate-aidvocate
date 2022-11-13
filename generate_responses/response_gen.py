@@ -143,20 +143,20 @@ def split_responses(text: str) -> List[str]:
 
     num = 0
     responses = ['']
-    for sentence in text.strip('\n').split('.'):
+    for sentence in text.split('. '):
         if sentence == '':
             continue
         if len(sentence) > TWITTER_TOKEN_LIMIT - 5:
             words = sentence.split()
             k = int(len(words)/2)
-            phrase1 = ' '.join(words[:k]) + ' '
+            phrase1 = ' '.join(words[:k]) + f' ({num + 1})'
             phrase2 = ' '.join(words[k:]) + '.'
             responses[num] += phrase1.lstrip(' ')
             responses.append('')
             num += 1
             responses[num] += phrase2.lstrip(' ')
 
-        if len(sentence) + len(responses[num]) <= TWITTER_TOKEN_LIMIT - 5:
+        elif len(sentence) + len(responses[num]) <= TWITTER_TOKEN_LIMIT - 5:
             responses[num] += sentence
             responses[num] += '.'
         else:
@@ -169,4 +169,10 @@ def split_responses(text: str) -> List[str]:
             responses[num] += sentence
             responses[num] += '.'
 
-    return responses[:-1]
+    if responses[-1] == "" or responses[-1] == "\n":
+        responses = responses[:-1]
+        
+    if responses[-1][-1] == ".":
+        responses[-1] += f' ({num + 1})'
+        
+    return responses
