@@ -145,4 +145,4 @@ def generate_responses(request):
     if errors != []:
         print(errors, file=sys.stderr)
 
-    return (len(responses), 200)
+    return (str(len(responses)), 200)
