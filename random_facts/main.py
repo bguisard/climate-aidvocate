@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import openai
 import tweepy
@@ -36,14 +34,20 @@ TOPICS = [
     "urban agriculture",
     "wasting less food",
     "wind energy",
-    "woman-led agriculture",
+    "woman led agriculture",
 ]
 
 
-def tweet_fun_fact(text: str):
-
+def authenticate_openai() -> None:
     secret_client = secretmanager.SecretManagerServiceClient()
-    secret_placeholder = "projects/%s/secrets/%s/versions/latest"
+    secret_name = "projects/climate-aidvocate/secrets/OPENAI_API_KEY/versions/latest"
+    response = secret_client.access_secret_version(request={"name": secret_name})
+    openai.api_key = response.payload.data.decode("UTF-8")
+
+
+def new_tweepy_client() -> tweepy.Client:
+    secret_client = secretmanager.SecretManagerServiceClient()
+    secret_placeholder = "projects/climate-aidvocate/secrets/%s/versions/latest"
     secret_names = [
         "TWITTER_CONSUMER_KEY",
         "TWITTER_CONSUMER_SECRET",
@@ -52,20 +56,21 @@ def tweet_fun_fact(text: str):
     ]
     secrets = {
         secret_name: secret_client.access_secret_version(
-            request={
-                "name": secret_placeholder % (os.environ["PROJECT_ID"], secret_name)
-            }
+            request={"name": secret_placeholder % secret_name}
         ).payload.data.decode("UTF-8")
         for secret_name in secret_names
     }
 
-    client = tweepy.Client(
+    return tweepy.Client(
         consumer_key=secrets["TWITTER_CONSUMER_KEY"],
         consumer_secret=secrets["TWITTER_CONSUMER_SECRET"],
         access_token=secrets["TWITTER_ACCESS_TOKEN"],
         access_token_secret=secrets["TWITTER_ACCESS_TOKEN_SECRET"],
     )
 
+
+def tweet_fun_fact(text: str):
+    client = new_tweepy_client()
     return client.create_tweet(text=text)
 
 
@@ -92,16 +97,10 @@ def generate_fun_fact(request):
     if np.random.random() < 0.5:
         return ("", 204)
 
+    authenticate_openai()
+
     topic = np.random.choice(TOPICS)
-
-    secret_client = secretmanager.SecretManagerServiceClient()
-    project = f"projects/{os.environ['PROJECT_ID']}"
-    secret_name = f"{project}/secrets/OPENAI_API_KEY/versions/latest"
-    response = secret_client.access_secret_version(request={"name": secret_name})
-    openai.api_key = response.payload.data.decode("UTF-8")
-
     text = complete_fun_fact(topic)
-
     hashtag = "\n#" + topic.replace(" ", "")
     if len(text) + len(hashtag) < 280:
         text += hashtag
