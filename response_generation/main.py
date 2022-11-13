@@ -169,7 +169,7 @@ def completion_with_backoff(**kwargs):
 
 
 def respond_using_topic(text: str, topic: str, max_tokens: int = 280, temperature: int = 0) -> str:
-    if 'instructions' in text or 'commands' in text:
+    if 'instruction' in text or 'command' in text:
         return None
 
     response = completion_with_backoff(
@@ -188,7 +188,7 @@ def respond_using_topic(text: str, topic: str, max_tokens: int = 280, temperatur
 
 
 def respond_generic(text: str, max_tokens: int = 280, temperature: int = 0) -> str:
-    if 'instructions' in text or 'commands' in text:
+    if 'instruction' in text or 'command' in text:
         return None
 
     response = completion_with_backoff(
@@ -209,7 +209,7 @@ def respond_generic(text: str, max_tokens: int = 280, temperature: int = 0) -> s
 def respond_mention(text: str, max_tokens: int = 280, temperature: int = 0) -> str:
     """Create response to a direct @ mention
     """
-    if 'instructions' in text or 'commands' in text:
+    if 'instruction' in text or 'command' in text:
         return None
     
     is_activity = completion_with_backoff(
