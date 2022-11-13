@@ -95,11 +95,11 @@ def complete_response(text: str) -> str:
         topics = search_material(topic=NEXUS_EMBEDDINGS, query=text)
         topics = topics.sort_values("similarity", ascending=False).head(1).reset_index(drop=True)
         if topics.similarity[0] < SIMILARITY_THRESHOLD:
-            return respond_generic(text)
+            return respond_generic(text, temperature=os.environ['TEMPERATURE'])
         else:
-            return respond_using_topic(text=text, topic=topics.text[0])
+            return respond_using_topic(text=text, topic=topics.text[0], temperature=os.environ['TEMPERATURE'])
     else:
-        response = respond_generic(text)
+        response = respond_generic(text, temperature=os.environ['TEMPERATURE'])
 
     return response
 
@@ -175,7 +175,7 @@ def respond_using_topic(text: str, topic: str, max_tokens: int = 280, temperatur
     response = completion_with_backoff(
         model="text-davinci-002",
         prompt=f"You are a climate change educator. Using only the information and facts provided in the excerpt below, "
-        "respond to this tweet. Provide action items and show hope:"
+        "respond to this tweet in less than 280 characters. Provide action items and show hope:"
         f"\n###\nTweet:{text}"
         f"\n###\nExcerpt:{topic}\n###\n\nResponse:",
         temperature=temperature,
@@ -194,7 +194,8 @@ def respond_generic(text: str, max_tokens: int = 280, temperature: int = 0) -> s
     response = completion_with_backoff(
         model="text-davinci-002",
         prompt=f"You are a climate change educator. "
-        "Respond to this tweet by specifically addressing any false points with factual information and citations."
+        "Respond to this tweet in less than 280 characters by specifically addressing any "
+        "false points with factual information. Add additional background and provide a link."
         f"-\n######\n-Tweet:{text}"
         f"Response:",
         temperature=temperature,
@@ -217,7 +218,7 @@ def respond_mention(text: str, max_tokens: int = 280, temperature: int = 0) -> s
         prompt="Is the input an activity that someone can do? Answer YES or NO."
         f"-\n######\n-Input:{text}"
         f"Response:",
-        temperature=temperature,
+        temperature=0,
         max_tokens=3,
         top_p=1,
         frequency_penalty=0,
@@ -229,6 +230,7 @@ def respond_mention(text: str, max_tokens: int = 280, temperature: int = 0) -> s
             model="text-davinci-002",
             prompt="Provide a list of 3 easy action items that an ordinary citizen "
             "can take in their daily lives to reduce carbon emissions when performing this activity. "
+            "Respond in less than 280 characters."
             f"-\n######\n-Activity:{text}"
             f"Response:",
             temperature=temperature,
@@ -238,4 +240,4 @@ def respond_mention(text: str, max_tokens: int = 280, temperature: int = 0) -> s
             presence_penalty=0,
         )['choices'][0]['text'].strip()
     else:
-        return respond_generic(text)
+        return respond_generic(text, max_tokens, temperature)

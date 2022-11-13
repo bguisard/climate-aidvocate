@@ -7,4 +7,4 @@ gcloud functions deploy response-generation \
   --timeout 300 \
   --trigger-http \
   --entry-point=generate_response \
-  --set-env-vars PROJECT_ID=climate-aidvocate
+  --set-env-vars PROJECT_ID=climate-aidvocate,TEMPERATURE=0.8
