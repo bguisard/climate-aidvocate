@@ -143,7 +143,7 @@ def generate_responses(request):
                             text=row.text, in_reply_to_tweet_id=row.id
                         )
                         reply_id = response.data["id"]
-                    except tweepy.TweepError as e:
+                    except tweepy.errors.TweepyException as e:
                         print(f"Failed to reply to tweet {row.id}: {e}")
 
                 response = {
