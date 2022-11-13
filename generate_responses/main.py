@@ -140,7 +140,7 @@ def generate_responses(request):
                 if safe:
                     try:
                         response = client.create_tweet(
-                            text=row.text, in_reply_to_tweet_id=row.id
+                            text=part, in_reply_to_tweet_id=row.id
                         )
                         reply_id = response.data["id"]
                     except tweepy.errors.TweepyException as e:
