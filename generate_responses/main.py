@@ -57,7 +57,7 @@ def new_tweepy_client() -> tweepy.Client:
 
 def complete_response(text: str, topics: pd.DataFrame) -> List:
     if TWITTER_HANDLE in text:
-        return [(respond_mention(text))]
+        response = respond_mention(text)
 
     stance = classify_text(str)
     if stance == " believer":
@@ -68,12 +68,15 @@ def complete_response(text: str, topics: pd.DataFrame) -> List:
             .reset_index(drop=True)
         )
         if topics.similarity[0] < SIMILARITY_THRESHOLD:
-            return [respond_generic(text, temperature=TEMPERATURE)]
+            response = respond_generic(text, temperature=TEMPERATURE)
         else:
-            return [respond_using_topic(text=text, topic=topics.text[0], temperature=TEMPERATURE)]
+            response = respond_using_topic(
+                text=text, topic=topics.text[0], temperature=TEMPERATURE
+            )
     else:
         response = respond_generic(text, temperature=TEMPERATURE, max_tokens=TOKEN_THRESHOLD)
-        return split_responses(response)
+    
+    return split_responses(response)
 
 
 def get_topics_df(

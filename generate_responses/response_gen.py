@@ -138,6 +138,9 @@ def respond_mention(text: str, max_tokens: int = TWITTER_TOKEN_LIMIT, temperatur
 def split_responses(text: str) -> List[str]:
     """Split response into list of responses satisfying the token limit.
     """
+    if len(text) <= TWITTER_TOKEN_LIMIT:
+        return [text]
+
     num = 0
     responses = ['']
     for sentence in text.strip('\n').split('.'):
