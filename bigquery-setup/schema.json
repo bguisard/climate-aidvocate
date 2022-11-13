@@ -1,0 +1,17 @@
+[
+    {
+      "name": "created_at",
+      "type": "TIMESTAMP",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "id",
+      "type": "INTEGER",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "text",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    }
+]
