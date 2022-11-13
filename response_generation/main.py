@@ -48,11 +48,10 @@ def query_bq(dataset, table, n=10):
     client = bigquery.Client()
     dataset_ref = client.dataset(dataset)
     table_ref = dataset_ref.table(table)
-    table = client.get_table(table_ref)
     query_job = client.query(
         f"""
         SELECT id, text
-        FROM `bigquery-public-data.stackoverflow.posts_questions`
+        FROM {table_ref}
         ORDER BY created_at DESC
         LIMIT {n}"""
     )
