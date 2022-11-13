@@ -130,8 +130,8 @@ def generate_responses(request):
 
         safe = False
         stance = classify_text(reply)
-        if stance in (" believer", " neutral"):
-            safe = True
+        # if stance in (" believer", " neutral"):
+        #     safe = True
 
         reply = split_responses(reply)
         if reply is not None:
