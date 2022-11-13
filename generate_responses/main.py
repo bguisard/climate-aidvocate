@@ -8,13 +8,12 @@ import openai
 import pandas as pd
 import tweepy
 from google.cloud import bigquery, secretmanager, storage
-
 from response_gen import (
     respond_generic,
     respond_mention,
     respond_using_topic,
     search_material,
-    split_responses
+    split_responses,
 )
 
 FINETUNED_MODEL = "babbage:ft-oai-hackathon-2022-team-13-2022-11-13-01-30-02"
@@ -74,9 +73,11 @@ def complete_response(text: str, topics: pd.DataFrame) -> List:
                 text=text, topic=topics.text[0], temperature=TEMPERATURE
             )
     else:
-        response = respond_generic(text, temperature=TEMPERATURE, max_tokens=TOKEN_THRESHOLD)
-    
-    return split_responses(response)
+        response = respond_generic(
+            text, temperature=TEMPERATURE, max_tokens=TOKEN_THRESHOLD
+        )
+
+    return response
 
 
 def get_topics_df(
@@ -123,20 +124,34 @@ def generate_responses(request):
     tweets = query_job.result()
 
     responses = []
-    # client = new_tweepy_client()
+    client = new_tweepy_client()
     for row in tweets:
         reply = complete_response(row.text, topics)
 
-        if reply is not None:
-            # response = client.create_tweet(text=row.text, in_reply_to_tweet_id=row.id)
+        safe = False
+        stance = classify_text(reply)
+        # Skip twitting for now, pending QA.
+        # if stance in (" believer", " neutral"):
+        #     safe = True
 
-            # if response and response.data["id"] is not None:
+        reply = split_responses(reply)
+        if reply is not None:
             for part in reply:
+                reply_id = None
+                if safe:
+                    response = client.create_tweet(
+                        text=row.text, in_reply_to_tweet_id=row.id
+                    )
+                    reply_id = response.data["id"]
+
                 response = {
                     "created_at": datetime.now(),
-                    # "id": response.data["id"],
+                    "id": reply_id,
                     "text": part,
                     "in_reply_to_tweet_id": row.id,
+                    "reply_stance": stance.strip(),
+                    # "safe": safe,
+                    "submitted": True if reply_id is not None else False,
                 }
                 responses.append(response)
 
