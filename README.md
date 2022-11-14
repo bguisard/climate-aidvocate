@@ -40,10 +40,15 @@ curated list of topics. This is also implemented via a Cloud Function with a
 Cloud Trigger that runs on a fixed cadence and a RNG roll to prevent it from
 posting at that fixed cadence.
 
-The RNG was just a cheap way to let the bot tweet in a less predictable cadence
-for the duration of the Hackathon.
+This was a cost-effective way to let the bot tweet in a less predictable cadence
+for the duration of the OpenAI Hackathon.
 
 ## Responding to Tweets
+
+### Architecture for Response Generation
+\
+![Architecture for Response Generation](images/response_architecture.png "Architecture for Response Generation")
+
 
 Climate AIdvocate is more careful when responding to tweets than when generating fun facts.
 
@@ -83,10 +88,6 @@ Every generated response, regardless of whether it was submitted or not, is
 logged to another table in BigQuery. This is an important step that allows
 humans to monitor the bot activity. It also generates additional training data
 for the bot, which can then be use to improve the quality of its answers.
-
-## Architecture for Response Generation
-\
-![Architecture for Response Generation](images/response_architecture.png "Architecture for Response Generation")
 
 ## References
 1. [Regeneration Nexus](https://regeneration.org/nexus), Project Regeneration.
