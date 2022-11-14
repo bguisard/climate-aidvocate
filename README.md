@@ -4,7 +4,7 @@ Serving code for the [@ClimateAIdvocat]. The climate AIdvocate is a GPT-3 powere
 twitter bot that flags false or misleading tweets about climate change, and
 responds with useful resources.
 
-## Real-time tweet pipeline
+## Real-time Tweet Pipeline
 
 1. Twitter to Pub/Sub
 
@@ -45,27 +45,50 @@ for the duration of the Hackathon.
 
 ## Responding to Tweets
 
-The bot is more careful when responding to tweets than when generating fun facts.
+Climate AIdvocate is more careful when responding to tweets than when generating fun facts.
 
-It starts by using a fine-tuned GPT-3 model to classify incoming tweets into
-`believer`, `neutral` and `den` (denialist).
+To understand the audience, we fine-tuned GPT-3 on external data [2, 3] to classify the stance
+of incoming tweets into `believer`, `neutral` and `denier`. Climate AIdvocate uses this
+model to identify the author's persona and respond appropriately.
 
+### Climate Change Believers
 When addressing believers, it uses a database of curated topics from
 [Regeneration's Nexus] to seed the prompt and reply in a way that encourages
 believers from taking action. It uses the `text-similarity-davinci-001` model to
 generate embeddings for the incoming tweet and cosine similarity to find the
 topic in our database that is the closest to the topic in the tweet.
 
-For tweets with neutral or denialist stances it gives a generic response which
-tries to reply to potentially misleading topics with factual information.
+### Climate Change Deniers
+For tweets with neutral or denier stances, Climate AIdvocate gives a generic response
+which replies to potentially misleading content with factual information. We found
+that pulling from a set of data sources is crucial here to reduce the risk of the
+occasional climate denial response.
 
-Before it tweets a response, it uses the same classifier that was used on the
-incoming tweets and if the stance of the reply is not at least neutral, it flags
-the tweet as unsafe and doesn't send it.
+### Safety Checks
+Before the bot tweets a response, it uses the same classifier that was used on the
+incoming tweets and if the stance of our response is not climate change `believer`,
+it flags the tweet as potentially unsafe and doesn't send it.
 
+### Direct Mentions
+If a user mentions @ClimateAIdvocate and describes an everyday activity in their
+tweet, the bot recommends related action items that promote sustainability.
+We use GPT-3 as an unsupervised classifier here to determine whether the
+content of the tweet fits this criteria. Otherwise, we respond with factual
+information using GPT-3.
+
+### Logging
 Every generated response, regardless of whether it was submitted or not, is
 logged to another table in BigQuery. This is an important step that allows
 humans to monitor the bot activity. It also generates additional training data
 for the bot, which can then be use to improve the quality of its answers.
 
-[Regeneration's Nexus]: https://regeneration.org/nexus
+## Architecture for Response Generation
+\
+![Architecture for Response Generation](images/response_architecture.png "Architecture for Response Generation")
+
+## References
+1. [Regeneration Nexus](https://regeneration.org/nexus), Project Regeneration.
+2. The climate change Twitter dataset (Effrosynidis et al., [2022](https://doi.org/10.1016/j.eswa.2022.117541)).
+3. Exploring climate change on Twitter using seven aspects: Stance, sentiment, aggressiveness, temperature, gender,
+topics, and disasters (Effrosynidis et al., [2022](https://doi.org/10.1371/journal.pone.0274213)).
+
