@@ -65,13 +65,15 @@ that pulling from a set of data sources is crucial here to reduce the risk of th
 occasional climate denial response.
 
 ### Safety Checks
-Before the bot tweets a response, it uses the same classifier that was used on the
-incoming tweets and if the stance of our response is not climate change `believer`,
-it flags the tweet as potentially unsafe and doesn't send it.
+Before the bot tweets a response, we apply the same stance classifier
+used on incoming tweets to our response. If the response is not
+classified as climate change `believer`, it flags the tweet as potentially unsafe
+and does not send.
 
 ### Direct Mentions
-If a user mentions @ClimateAIdvocate and describes an everyday activity in their
-tweet, the bot recommends related action items that promote sustainability.
+If a user mentions [@ClimateAIdvocat]: https://twitter.com/ClimateAIdvocat
+and describes an everyday activity in their tweet, the bot recommends related
+action items that promote sustainability.
 We use GPT-3 as an unsupervised classifier here to determine whether the
 content of the tweet fits this criteria. Otherwise, we respond with factual
 information using GPT-3.
