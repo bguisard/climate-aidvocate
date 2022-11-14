@@ -130,7 +130,6 @@ def generate_responses(request):
 
         safe = False
         stance = classify_text(reply)
-        # Skip twitting for now, pending QA.
         # if stance in (" believer", " neutral"):
         #     safe = True
 
@@ -139,10 +138,13 @@ def generate_responses(request):
             for part in reply:
                 reply_id = None
                 if safe:
-                    response = client.create_tweet(
-                        text=row.text, in_reply_to_tweet_id=row.id
-                    )
-                    reply_id = response.data["id"]
+                    try:
+                        response = client.create_tweet(
+                            text=part, in_reply_to_tweet_id=row.id
+                        )
+                        reply_id = response.data["id"]
+                    except tweepy.errors.TweepyException as e:
+                        print(f"Failed to reply to tweet {row.id}: {e}")
 
                 response = {
                     "created_at": datetime.now(),
@@ -150,7 +152,7 @@ def generate_responses(request):
                     "text": part,
                     "in_reply_to_tweet_id": row.id,
                     "reply_stance": stance.strip(),
-                    # "safe": safe,
+                    "safe": safe,
                     "submitted": True if reply_id is not None else False,
                 }
                 responses.append(response)
